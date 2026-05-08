@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeriU Admin - Login</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/login.css">
+    <script>
+        (function () {
+            try {
+                var pref = localStorage.getItem('erp_theme_preference') || 'system';
+                var sistemaEscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (pref === 'dark' || (pref === 'system' && sistemaEscuro)) {
+                    document.documentElement.classList.add('dark-theme');
+                }
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+
+<div class="bg-shape shape-1"></div>
+<div class="bg-shape shape-2"></div>
+
+<div class="login-card">
+    <div class="login-logo">
+        <i data-lucide="box" size="26"></i>
+        <span>MeriU Admin</span>
+    </div>
+    <p class="login-subtitle">Gestao de estoque e loja online</p>
+
+    <div class="input-group">
+        <label>Usuário</label>
+        <div class="input-wrapper">
+            <i data-lucide="user" size="16"></i>
+            <input type="text" id="usuario" placeholder="Digite seu usuário" autofocus>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Senha</label>
+        <div class="input-wrapper">
+            <i data-lucide="lock" size="16"></i>
+            <input type="password" id="senha" placeholder="Digite sua senha">
+            <button class="toggle-password" onclick="toggleSenha()" type="button" title="Mostrar senha">
+                <i data-lucide="eye" size="16" id="icone-olho"></i>
+            </button>
+        </div>
+    </div>
+
+    <button class="btn-login" onclick="fazerLogin()">
+        <i data-lucide="log-in" size="18"></i> Entrar
+    </button>
+
+    <div class="error-msg" id="erroLogin">Usuário ou senha incorretos.</div>
+
+    <div class="login-footer">
+        Acesso restrito a operadores autorizados.
+    </div>
+</div>
+
+<script src="/static/js/login.js"></script>
+
+</body>
+</html>

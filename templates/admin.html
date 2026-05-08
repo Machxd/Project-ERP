@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeriU Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/index.css">
+</head>
+<body>
+
+<div class="app-container">
+
+    
+    <div class="header">
+        <div class="header-title"><i data-lucide="box" size="22"></i> MeriU Admin</div>
+        <div class="header-actions">
+            <div class="user-badge">
+                <i data-lucide="user" size="14"></i>
+                <span id="nomeUsuario">---</span>
+                <span class="role-pill" id="perfilUsuario">---</span>
+            </div>
+            <button class="btn" onclick="toggleTema()" title="Alternar Tema">
+                <i data-lucide="moon" size="16" id="icone-tema"></i>
+            </button>
+            <div class="dropdown admin-only">
+                <button class="btn dropbtn" onclick="toggleDropdown()">
+                    <i data-lucide="upload" size="16" style="pointer-events:none;"></i>
+                    Importar
+                    <i data-lucide="chevron-down" size="14" style="pointer-events:none;"></i>
+                </button>
+                <div class="dropdown-content" id="importDropdown">
+                    <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="processarCSV(event)">
+                    <button onclick="document.getElementById('csvFileInput').click()" title="Colunas aceitas: Nome, Categoria, Lote, Quantidade, Validade, Entrada e Preco opcional">
+                        <i data-lucide="file-spreadsheet" size="16"></i> Ficheiro CSV Local
+                    </button>
+                    <button onclick="alert('Módulo de Integração com Sistema Online em desenvolvimento!')">
+                        <i data-lucide="globe" size="16"></i> Sistema Online (API)
+                    </button>
+                </div>
+            </div>
+            <button class="btn btn-danger-fill admin-only" onclick="resetarSistema()" title="Resetar sistema">
+                <i data-lucide="rotate-ccw" size="16"></i> Resetar
+            </button>
+            <button class="btn" onclick="fazerLogout()" title="Sair">
+                <i data-lucide="log-out" size="16"></i> Sair
+            </button>
+        </div>
+    </div>
+
+    
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchView('inventario')" id="tab-inventario">
+            <i data-lucide="package" size="16"></i> Estoque
+        </button>
+        <button class="tab-btn admin-only" onclick="switchView('precos')" id="tab-precos">
+            <i data-lucide="badge-dollar-sign" size="16"></i> Preços
+        </button>
+        <button class="tab-btn" onclick="switchView('historico')" id="tab-historico">
+            <i data-lucide="history" size="16"></i> Histórico
+        </button>
+        <button class="tab-btn admin-only" onclick="switchView('pedidos')" id="tab-pedidos">
+            <i data-lucide="shopping-bag" size="16"></i> Pedidos
+        </button>
+        <button class="tab-btn admin-only" onclick="switchView('usuarios')" id="tab-usuarios">
+            <i data-lucide="users" size="16"></i> Usuários
+        </button>
+    </div>
+
+    
+    <div id="view-inventario" class="view-section active">
+        <div class="grid-layout">
+
+            
+            <div class="glass-panel admin-only">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <i data-lucide="plus-circle" size="18" id="icone-form"></i>
+                        <span id="titulo-form">Novo Produto</span>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group"><label>Nome</label><input type="text" id="nome" placeholder="Ex: Leite Integral"></div>
+                    <div class="input-group"><label>Categoria</label><input type="text" id="categoria" placeholder="Ex: Laticínios"></div>
+                    <div class="input-group"><label>Lote</label><input type="text" id="lote" placeholder="Ex: Lote 03/2026"></div>
+                    <div class="input-group"><label>Quantidade</label><input type="number" id="quantidade" placeholder="0"></div>
+                    <div class="input-group"><label>Preço (R$)</label><input type="number" id="preco" step="0.01" min="0" placeholder="0,00"></div>
+                    <div class="input-group"><label>Validade</label><input type="date" id="validade"></div>
+                    <div class="input-group"><label>Entrada</label><input type="date" id="entrada"></div>
+                    <div class="input-group" style="grid-column:1/-1;"><label>Imagem do produto (URL)</label><input type="url" id="imagem_url" placeholder="Uma imagem por produto; vale para todos os lotes iguais"></div>
+                </div>
+                <div style="display:flex;gap:8px;width:100%;">
+                    <button class="btn btn-accent" id="btn-acao-form" style="flex:1;justify-content:center;" onclick="salvarFormulario()">
+                        <i data-lucide="save" size="16" id="icone-btn-form"></i> <span id="texto-btn-form">Registrar</span>
+                    </button>
+                    <button class="btn" id="btn-cancelar-form" style="display:none;justify-content:center;padding:8px 12px;" onclick="cancelarEdicao()" title="Cancelar">
+                        <i data-lucide="x" size="16"></i>
+                    </button>
+                </div>
+            </div>
+
+            
+            <div class="glass-panel" id="fullscreen-container">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <i data-lucide="list" size="18"></i> Inventário
+                        <span class="hint">(clique na linha para editar)</span>
+                    </div>
+                    <div class="panel-header-right">
+                        <div class="search-bar">
+                            <i data-lucide="search" size="14" class="search-icon"></i>
+                            <input type="text" id="campoPesquisa" placeholder="Pesquisar produto..." oninput="processarERenderizar()">
+                        </div>
+                        <select id="filtroMesInventario" class="filtro-mes" onchange="processarERenderizar()">
+                            <option value="todos">Todos</option>
+                        </select>
+                        <button class="btn" onclick="exportarDados('inventario','csv')" title="Exportar inventario CSV">
+                            <i data-lucide="file-spreadsheet" size="14"></i> CSV
+                        </button>
+                        <button class="btn" onclick="exportarDados('inventario','pdf')" title="Exportar inventario PDF">
+                            <i data-lucide="file-text" size="14"></i> PDF
+                        </button>
+                        <button class="icon-btn" onclick="toggleFullScreen()" title="Expandir">
+                            <i data-lucide="maximize" size="16" id="icone-fullscreen"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tabela-produtos">
+                        <thead>
+                            <tr>
+                                <th onclick="ordenarTabela('nome')"><div>Produto <i data-lucide="arrow-up-down" size="12"></i></div></th>
+                                <th onclick="ordenarTabela('categoria')"><div>Categoria <i data-lucide="arrow-up-down" size="12"></i></div></th>
+                                <th onclick="ordenarTabela('lote')"><div>Lote <i data-lucide="arrow-up-down" size="12"></i></div></th>
+                                <th onclick="ordenarTabela('quantidade')"><div>Qtd <i data-lucide="arrow-up-down" size="12"></i></div></th>
+                                <th onclick="ordenarTabela('validade')"><div>Validade <i data-lucide="arrow-up-down" size="12"></i></div></th>
+                                <th><div>Status</div></th>
+                                <th><div>Ações</div></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="charts-grid">
+            <div class="glass-panel chart-box"><canvas id="graficoStatus"></canvas></div>
+            <div class="glass-panel chart-box"><canvas id="graficoCategoria"></canvas></div>
+        </div>
+        <div class="dashboard-tables-grid">
+            <div class="glass-panel dashboard-table-card">
+                <div class="dashboard-table-head">
+                    <span><i data-lucide="shopping-cart" size="16"></i> Compras / entradas</span>
+                    <small>ultimos registros</small>
+                </div>
+                <table class="mini-table" id="tabela-dashboard-entradas">
+                    <thead>
+                        <tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Motivo</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="glass-panel dashboard-table-card">
+                <div class="dashboard-table-head">
+                    <span><i data-lucide="receipt" size="16"></i> Vendas / saidas</span>
+                    <small>movimento de baixa</small>
+                </div>
+                <table class="mini-table" id="tabela-dashboard-saidas">
+                    <thead>
+                        <tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Motivo</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="glass-panel dashboard-table-card">
+                <div class="dashboard-table-head">
+                    <span><i data-lucide="trash-2" size="16"></i> Desperdicios</span>
+                    <small>perdas e descartes</small>
+                </div>
+                <table class="mini-table" id="tabela-dashboard-desperdicios">
+                    <thead>
+                        <tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Motivo</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="view-precos" class="view-section admin-only">
+        <div class="price-workbench">
+            <div class="glass-panel price-side">
+                <div class="panel-header">
+                    <div class="panel-header-left"><i data-lucide="sliders-horizontal" size="18"></i> Controle</div>
+                </div>
+                <div class="price-metric">
+                    <div class="price-metric-label">Produtos visiveis</div>
+                    <div class="price-metric-value" id="precosTotalVisivel">0</div>
+                </div>
+                <div class="price-metric">
+                    <div class="price-metric-label">Alteracoes pendentes</div>
+                    <div class="price-metric-value" id="precosPendentes">0</div>
+                </div>
+                <div class="price-metric">
+                    <div class="price-metric-label">Sugestoes ativas</div>
+                    <div class="price-metric-value" id="precosSugestoes">0</div>
+                </div>
+                <div class="price-metric price-selection-metric">
+                    <div class="price-metric-label">Selecionados</div>
+                    <div class="price-metric-value" id="precosSelecionados">0</div>
+                </div>
+                <button class="btn btn-info-fill" id="btnSugerirPrecos" onclick="sugerirPrecos()" style="justify-content:center;" title="Usa Gemini para buscar preco medio de mercado dos produtos visiveis">
+                    <i data-lucide="sparkles" size="16"></i>
+                    <span class="btn-label">Sugerir precos</span>
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                </button>
+                <div class="price-selection-actions" id="priceSelectionActions">
+                    <button class="btn" onclick="selecionarTodosPrecosVisiveis()" style="justify-content:center;">
+                        <i data-lucide="check-square" size="16"></i> Selecionar visiveis
+                    </button>
+                    <button class="btn" onclick="cancelarSelecaoPrecos()" style="justify-content:center;">
+                        <i data-lucide="x" size="16"></i> Cancelar selecao
+                    </button>
+                </div>
+                <button class="btn btn-accent" onclick="salvarPrecos()" style="justify-content:center;">
+                    <i data-lucide="save" size="16"></i> Salvar precos
+                </button>
+                <button class="btn" onclick="descartarPrecos()" style="justify-content:center;">
+                    <i data-lucide="undo-2" size="16"></i> Descartar
+                </button>
+            </div>
+            <div class="glass-panel">
+                <div class="promo-validity-panel">
+                    <div class="promo-validity-head">
+                        <div>
+                            <strong>Promocoes por validade</strong>
+                            <span>Automaticas na loja: 25% off ate 30 dias, 75% off ate 7 dias</span>
+                        </div>
+                        <span id="promoValidadeResumo">0 itens</span>
+                    </div>
+                    <div class="promo-validity-list" id="promoValidadeList"></div>
+                </div>
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <i data-lucide="badge-dollar-sign" size="18"></i> Tabela de Precos
+                        <span class="hint">edicao em lote para a loja</span>
+                    </div>
+                    <div class="panel-header-right">
+                        <div class="search-bar">
+                            <i data-lucide="search" size="14" class="search-icon"></i>
+                            <input type="text" id="campoPesquisaPrecos" placeholder="Buscar produto..." oninput="renderizarPrecos()">
+                        </div>
+                        <select id="filtroCategoriaPrecos" class="filtro-mes" onchange="renderizarPrecos()">
+                            <option value="todos">Todas categorias</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container table-container-full">
+                    <table id="tabela-precos">
+                        <thead>
+                            <tr>
+                                <th class="price-select-col"><div></div></th>
+                                <th><div>Produto</div></th>
+                                <th><div>Categoria</div></th>
+                                <th><div>Lote</div></th>
+                                <th><div>Estoque</div></th>
+                                <th><div>Preco atual</div></th>
+                                <th><div>Sugestao</div></th>
+                                <th><div>Novo preco</div></th>
+                                <th><div>Variacao</div></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-historico" class="view-section">
+        <div class="glass-panel">
+            <div class="panel-header">
+                <div class="panel-header-left"><i data-lucide="activity" size="18"></i> Movimentações</div>
+                <div class="panel-header-right">
+                    <select id="filtroMesHistorico" class="filtro-mes" onchange="renderizarHistoricoFiltrado()">
+                        <option value="todos">Todos</option>
+                    </select>
+                    <button class="btn" onclick="exportarDados('historico','csv')" title="Exportar historico CSV">
+                        <i data-lucide="file-spreadsheet" size="14"></i> CSV
+                    </button>
+                    <button class="btn" onclick="exportarDados('historico','pdf')" title="Exportar historico PDF">
+                        <i data-lucide="file-text" size="14"></i> PDF
+                    </button>
+                </div>
+            </div>
+            <div class="table-container table-container-full">
+                <table id="tabela-historico">
+                    <thead>
+                        <tr>
+                            <th><div>Data / Hora</div></th>
+                            <th><div>Produto</div></th>
+                            <th><div>Tipo</div></th>
+                            <th><div>Qtd</div></th>
+                            <th><div>Motivo</div></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="view-pedidos" class="view-section">
+        <div class="glass-panel">
+            <div class="panel-header">
+                <div class="panel-header-left"><i data-lucide="shopping-bag" size="18"></i> Pedidos Online</div>
+                <div class="panel-header-right">
+                    <a href="/loja" target="_blank" class="btn btn-accent" style="text-decoration:none;font-size:0.84rem;">
+                        <i data-lucide="external-link" size="14"></i> Abrir Loja
+                    </a>
+                </div>
+            </div>
+            <div class="table-container table-container-full">
+                <table id="tabela-pedidos">
+                    <thead>
+                        <tr>
+                            <th><div>#</div></th>
+                            <th><div>Cliente</div></th>
+                            <th><div>Data / Hora</div></th>
+                            <th><div>Pagamento</div></th>
+                            <th><div>Total</div></th>
+                            <th><div>Status</div></th>
+                            <th><div>Itens</div></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="view-usuarios" class="view-section admin-only">
+        <div class="grid-layout">
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <i data-lucide="user-plus" size="18"></i>
+                        <span>Novo usuário</span>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Nome</label>
+                        <input type="text" id="usuarioNome" placeholder="Ex: maria" autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label>Senha</label>
+                        <input type="password" id="usuarioSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                    </div>
+                    <div class="input-group">
+                        <label>Perfil</label>
+                        <select id="usuarioPerfil" class="filtro-mes">
+                            <option value="operador">Operador</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-buttons" style="margin-top:12px;">
+                    <button class="btn btn-accent" style="flex:1;justify-content:center;" onclick="criarUsuario()">
+                        <i data-lucide="plus-circle" size="16"></i> Cadastrar
+                    </button>
+                </div>
+                <p style="color:var(--text-tertiary);font-size:0.78rem;margin-top:10px;line-height:1.5;">
+                    Nome aceita letras, números, ponto, hífen e underline (3 a 32 caracteres). A troca de senha encerra sessões ativas do usuário.
+                </p>
+            </div>
+
+            <div class="glass-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <i data-lucide="users" size="18"></i>
+                        <span>Usuários cadastrados</span>
+                    </div>
+                </div>
+                <div class="table-container table-container-full">
+                    <table id="tabela-usuarios">
+                        <thead>
+                            <tr>
+                                <th><div>Nome</div></th>
+                                <th><div>Perfil</div></th>
+                                <th><div>Criado em</div></th>
+                                <th><div>Ações</div></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalMovimento" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Movimentar Estoque</h3>
+            <button class="close-modal" onclick="fecharModal()"><i data-lucide="x" size="18"></i></button>
+        </div>
+        <p style="color:var(--text-secondary);margin-bottom:14px;font-size:0.88rem;line-height:1.5;">
+            Produto: <strong style="color:var(--text-primary);" id="modalProdutoNome">---</strong><br>
+            Estoque atual: <strong style="color:var(--accent);font-size:1.05rem;" id="modalProdutoQtd">---</strong>
+        </p>
+        <div class="input-group" style="margin-bottom:12px;">
+            <label>Quantidade</label>
+            <input type="number" id="inputMovimentoQtd" min="1" value="1" style="text-align:center;">
+        </div>
+        <div class="input-group">
+            <label>Motivo</label>
+            <input type="text" id="inputMovimentoMotivo" placeholder="Ex: Venda, Venceu, Quebrou...">
+        </div>
+        <div class="movimento-botoes">
+            <button class="btn btn-success-fill" onclick="salvarMovimento('entrada')">
+                <i data-lucide="arrow-down-to-line" size="16"></i> Entrada
+            </button>
+            <button class="btn btn-info-fill" onclick="salvarMovimento('saida')">
+                <i data-lucide="arrow-up-from-line" size="16"></i> Saída
+            </button>
+            <button class="btn btn-danger-fill" onclick="salvarMovimento('desperdicio')">
+                <i data-lucide="alert-triangle" size="16"></i> Desperdício
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/index.js"></script>
+
+</body>
+</html>

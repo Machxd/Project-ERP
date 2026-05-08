@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 72" role="img" aria-label="MeriU">
+  <defs>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.6" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.08 0 0 0 0 0.64 0 0 0 0 0.30 0 0 0 0.45 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    <path d="M13 51c12 12 42 15 68 1" stroke="#16a34a" stroke-width="4"/>
+    <path d="M80 24c12 7 9 24-1 31" stroke="#22c55e" stroke-width="4"/>
+    <path d="M24 34h49c3 0 5 2 4 5l-1 4H29" stroke="#15803d" stroke-width="4"/>
+    <path d="M32 43l4 13c2 5 7 8 13 8h15c7 0 12-3 15-9" stroke="#16a34a" stroke-width="4"/>
+    <path d="M68 20h16l6 13" stroke="#15803d" stroke-width="4"/>
+    <path d="M33 31c-2-13 11-24 31-26 1 16-11 30-30 32" stroke="#22c55e" stroke-width="4"/>
+    <path d="M33 31c6-9 15-16 28-22" stroke="#86efac" stroke-width="2.6"/>
+  </g>
+  <circle cx="77" cy="36" r="5.5" fill="#f8f1de"/>
+</svg>

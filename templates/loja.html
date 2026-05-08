@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeriU</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/loja.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="nav-logo" href="/loja">
+        <div class="logo-box">
+            <img src="/static/img/meriu-logo.png" alt="MeriU">
+        </div>
+        <span>MeriU</span>
+    </a>
+
+    <div class="nav-search">
+        <span class="icon-search"><i data-lucide="search" size="14"></i></span>
+        <input type="search" id="searchInput" placeholder="Buscar produtos..." oninput="buscarProdutos()" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <div class="nav-right">
+        <button class="btn-erp btn-theme" onclick="toggleTema()" title="Alternar Tema" aria-label="Alternar Tema">
+            <i data-lucide="moon" size="14" id="icone-tema"></i>
+        </button>
+        <button class="btn-cart" onclick="toggleCart()">
+            <i data-lucide="shopping-cart" size="15"></i>
+            Carrinho
+            <span class="cart-pill" id="cartBadge">0</span>
+        </button>
+    </div>
+</nav>
+
+<div class="page">
+
+    <div class="store-hero">
+        <div class="store-copy">
+            <div class="store-kicker">
+                <i data-lucide="sparkles" size="14"></i>
+                MeriU online
+            </div>
+            <h1>Produtos frescos para montar seu pedido</h1>
+            <p id="subtitleText">Escolha por categoria, acompanhe validade e finalize em poucos passos.</p>
+            <div class="store-promises">
+                <span><i data-lucide="truck" size="14"></i> Entrega local</span>
+                <span><i data-lucide="shield-check" size="14"></i> Estoque conferido</span>
+                <span><i data-lucide="clock" size="14"></i> Pedido rapido</span>
+            </div>
+        </div>
+        <div class="store-panel">
+            <div class="store-panel-label">Disponibilidade</div>
+            <div class="store-panel-value" id="liveCountPanel">Carregando...</div>
+            <div class="store-panel-meta" id="freshnessSummary">Sincronizando estoque...</div>
+        </div>
+    </div>
+    <div class="cats-outer">
+        <div class="cats-scroll" id="catsBar">
+</div>
+    </div>
+
+    <div class="store-promo-strip" id="storePromoStrip" style="display:none;"></div>
+
+    
+    <div class="section-bar">
+        <span class="section-title" id="sectionTitle">Produtos disponiveis</span>
+        <span class="section-count" id="sectionCount"></span>
+        <div class="section-controls">
+            <div class="control-field">
+                <label for="viewSelect">Exibir</label>
+                <select id="viewSelect" onchange="mudarFiltroProdutos()">
+                    <option value="todos">Categoria selecionada</option>
+                    <option value="promocoes">Promocoes da categoria</option>
+                </select>
+            </div>
+            <div class="control-field">
+                <label for="sortSelect">Ordenar</label>
+                <select id="sortSelect" onchange="ordenarLoja()">
+                    <option value="relevancia">Relevancia</option>
+                    <option value="validade">Vencem primeiro</option>
+                    <option value="preco-menor">Menor preco</option>
+                    <option value="preco-maior">Maior preco</option>
+                    <option value="nome">Nome</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="product-grid" id="productGrid">
+        
+    </div>
+
+</div>
+
+
+<div class="cart-summary-bar" id="cartSummaryBar">
+    <div>
+        <strong id="summaryCount">0 itens</strong>
+        <span id="summaryTotal">R$ 0,00</span>
+    </div>
+    <button onclick="abrirCheckout()">Finalizar pedido</button>
+</div>
+
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-head">
+        <div class="cart-head-title">
+            <i data-lucide="shopping-bag" size="15"></i>
+            Carrinho
+            <span class="cart-head-count" id="cartHeadCount" style="display:none;"></span>
+        </div>
+        <button class="btn-icon" onclick="toggleCart()">
+            <i data-lucide="x" size="16"></i>
+        </button>
+    </div>
+
+    <div class="cart-list" id="cartList">
+        <div class="cart-empty-msg" id="cartEmptyMsg">
+            <div class="empty-icon">
+                <i data-lucide="shopping-cart" size="22"></i>
+            </div>
+            <p>Nenhum item no carrinho</p>
+        </div>
+    </div>
+
+    <div class="cart-foot">
+        <div class="cart-total-row">
+            <span class="cart-total-label">Total</span>
+            <span class="cart-total-val" id="cartTotalVal">R$ 0,00</span>
+        </div>
+        <button class="btn-checkout-main" onclick="abrirCheckout()">Finalizar pedido</button>
+        <button class="btn-clear-cart" onclick="limparCarrinho()">Limpar carrinho</button>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-panel">
+
+        <div class="modal-head">
+            <h2 id="modalTitle">Revisar pedido</h2>
+            <button class="btn-icon" onclick="fecharCheckout()">
+                <i data-lucide="x" size="16"></i>
+            </button>
+        </div>
+
+        
+        <div class="steps">
+            <div class="step-dot active" id="sd1">1</div>
+            <div class="step-line"><div class="step-fill" id="sf1"></div></div>
+            <div class="step-dot" id="sd2">2</div>
+            <div class="step-line"><div class="step-fill" id="sf2"></div></div>
+            <div class="step-dot" id="sd3">3</div>
+        </div>
+
+        
+        <div class="modal-body" id="s1">
+            <div class="review-items" id="reviewItems"></div>
+            <div class="review-total-box">
+                <span>Total</span>
+                <span id="reviewTotal" style="color:var(--green);">R$ 0,00</span>
+            </div>
+        </div>
+
+        
+        <div class="modal-body" id="s2" style="display:none;">
+            <div class="form-section">
+                <span class="form-label">Informações de entrega</span>
+                <div class="form-grid">
+                    <div class="field full">
+                        <label>Nome *</label>
+                        <input id="fNome" type="text" placeholder="Nome completo">
+                    </div>
+                    <div class="field">
+                        <label>Telefone</label>
+                        <input id="fTel" type="tel" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="field full">
+                        <label>Endereço *</label>
+                        <input id="fEnd" type="text" placeholder="Rua, número">
+                    </div>
+                    <div class="field">
+                        <label>Complemento</label>
+                        <input id="fComp" type="text" placeholder="Apto, bloco...">
+                    </div>
+                    <div class="field">
+                        <label>Observação</label>
+                        <input id="fObs" type="text" placeholder="Alguma observação?">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <span class="form-label">Pagamento</span>
+                <div class="pay-tabs">
+                    <button class="pay-tab active" id="tabPix"      onclick="selecionarPag('pix')">
+                        <i data-lucide="smartphone" size="16"></i> Pix
+                    </button>
+                    <button class="pay-tab"         id="tabCartao"  onclick="selecionarPag('cartao')">
+                        <i data-lucide="credit-card" size="16"></i> Cartão
+                    </button>
+                    <button class="pay-tab"         id="tabDinheiro" onclick="selecionarPag('dinheiro')">
+                        <i data-lucide="banknote" size="16"></i> Dinheiro
+                    </button>
+                </div>
+
+                <div class="pay-panel show" id="panelPix">
+                    <div class="pix-wrap">
+                        <div class="pix-qr-box" id="pixQrBox"></div>
+                        <div class="pix-details">
+                            <h4>Pix</h4>
+                            <div class="pix-key-box">
+                                <span id="pixKeyText" style="flex:1;">meriu@loja.com.br</span>
+                                <button class="btn-copy" onclick="copiarPix()">Copiar</button>
+                            </div>
+                            <div class="pix-amount" id="pixAmt">R$ 0,00</div>
+                            <div class="pix-note">Envie o comprovante após o pagamento.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pay-panel" id="panelCartao">
+                    <div class="card-preview" id="cardPreview">
+                        <div class="card-inner">
+                            <div class="card-face card-front">
+                                <div class="cf-content">
+                                    <div class="cf-top">
+                                        <span class="cf-brand">VISA</span>
+                                        <i data-lucide="wifi" size="18" style="color:rgba(255,255,255,0.6);transform:rotate(90deg);"></i>
+                                    </div>
+                                    <div class="cf-number" id="cfNum">•••• •••• •••• ••••</div>
+                                    <div class="cf-footer">
+                                        <div>
+                                            <div class="cf-label">Titular</div>
+                                            <div class="cf-value" id="cfName">SEU NOME</div>
+                                        </div>
+                                        <div>
+                                            <div class="cf-label">Validade</div>
+                                            <div class="cf-value" id="cfExp">MM/AA</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-face card-back">
+                                <div class="cb-content">
+                                    <div class="cb-strip"></div>
+                                    <div class="cb-cvv">
+                                        <div class="cb-cvv-label">CVV</div>
+                                        <div class="cb-cvv-val" id="cfCvv">•••</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-form-grid">
+                        <div class="field full">
+                            <label>Número do cartão</label>
+                            <input id="cNum" type="text" maxlength="19" placeholder="0000 0000 0000 0000" oninput="fmtNum(this)">
+                        </div>
+                        <div class="field full">
+                            <label>Nome no cartão</label>
+                            <input id="cName" type="text" placeholder="Como está no cartão" oninput="document.getElementById('cfName').textContent=this.value.toUpperCase()||'SEU NOME'">
+                        </div>
+                        <div class="field">
+                            <label>Validade</label>
+                            <input id="cExp" type="text" maxlength="5" placeholder="MM/AA" oninput="fmtExp(this)">
+                        </div>
+                        <div class="field">
+                            <label>CVV</label>
+                            <input id="cCvv" type="text" maxlength="3" placeholder="•••" onfocus="document.getElementById('cardPreview').classList.add('flip')" onblur="document.getElementById('cardPreview').classList.remove('flip')" oninput="document.getElementById('cfCvv').textContent=this.value||'•••'">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pay-panel" id="panelDinheiro">
+                    <div class="cash-box">
+                        <div class="cash-icon"><i data-lucide="banknote" size="22"></i></div>
+                        <p>Pagamento na entrega. Informe nas observações se precisar de troco.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="modal-body" id="s3" style="display:none;">
+            <div class="success-wrap">
+                <div class="success-circle">
+                    <i data-lucide="check" size="28"></i>
+                </div>
+                <h3>Pedido realizado!</h3>
+                <div class="order-badge" id="orderBadge">#0000</div>
+                <div class="success-detail" id="successDetail"></div>
+                <button class="btn-continue" onclick="fecharCheckout()">Continuar comprando</button>
+            </div>
+        </div>
+
+        
+        <div class="modal-foot" id="modalFoot">
+            <button class="btn-back" id="btnBack" onclick="stepBack()" style="display:none;">Voltar</button>
+            <button class="btn-next" id="btnNext" onclick="stepNext()">Continuar</button>
+        </div>
+
+    </div>
+</div>
+
+<script src="/static/js/loja.js"></script>
+</body>
+</html>
